@@ -33,6 +33,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define LINE_MAX_LENGTH 80
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -68,6 +69,39 @@ int __io_putchar(int sign)
 	HAL_UART_Transmit(&huart2, (uint8_t*)&sign, 1, HAL_MAX_DELAY);
 	return 1;
 }
+
+static char line_buffer[LINE_MAX_LENGTH+1];
+static uint32_t line_length;
+
+void line_append(uint8_t value)
+{
+	if(value=='\r'||value=='\n')
+	{
+		if(line_length>0)
+		{
+			line_buffer[line_length]='\0';
+			if (strcmp(line_buffer, "turn on")==0){
+				HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
+				printf("Command: %s\n", line_buffer);
+			}
+			else if(strcmp(line_buffer, "turn off")==0){
+				HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
+				printf("Command: %s\n", line_buffer);
+			}
+			else printf("Unrecognized command: %s\n", line_buffer);
+			line_length=0;
+		}
+	}
+	else
+	{
+		if(line_length>=LINE_MAX_LENGTH)
+		{
+			line_length=0;
+		}
+		line_buffer[line_length++]=value;
+	}
+}
+
 /* USER CODE END 0 */
 
 /**
@@ -101,7 +135,7 @@ int main(void)
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
   const char message[]="HEJA\n\r";
-  //HAL_UART_Transmit(&huart2, (uint8_t*)message, strlen(message), HAL_MAX_DELAY);
+  HAL_UART_Transmit(&huart2, (uint8_t*)message, strlen(message), HAL_MAX_DELAY);
   printf("HALOO\n");
   /* USER CODE END 2 */
 
@@ -110,7 +144,8 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-
+	  uint8_t value;
+	  if(HAL_UART_Receive(&huart2, &value, 1, 0)==HAL_OK) line_append(value);
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
