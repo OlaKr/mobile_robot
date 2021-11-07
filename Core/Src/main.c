@@ -38,6 +38,8 @@ typedef struct{
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 #define LINE_MAX_LENGTH 80
+
+#define BUFFER_LEN  1
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -57,14 +59,9 @@ UART_HandleTypeDef huart2;
 //		{USER_BUTTON2_GPIO_Port, USER_BUTTON2_Pin},
 //};
 
-//int flag, j, a;
-//uint8_t nx;
-//char str1[60]={0};
-//
-//int len;
-//char buffer[100];
-//
-//int i;
+int len;
+char buffer[100];
+int i;
 
 /* USER CODE END PV */
 
@@ -110,17 +107,18 @@ void line_append(uint8_t value)
 		if(line_length>0)
 		{
 			line_buffer[line_length]='\0';
-			if (strcmp(line_buffer, "turn on")==0){
+			if (strcmp(line_buffer, "on")==0){
 				HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
 				printf("Command: %s\n", line_buffer);
 			}
-			else if(strcmp(line_buffer, "turn off")==0){
+			else if(strcmp(line_buffer, "off")==0){
 				HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
 				printf("Command: %s\n", line_buffer);
 			}
-//			else if(strcmp(line_buffer, "haha")==0){
-//				HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, 0);
-//			}
+			else if(strcmp(line_buffer, "haha")==0){
+				HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, 0);
+
+			}
 			else printf("Unrecognized command: %s\n", line_buffer);
 			line_length=0;
 		}
@@ -140,29 +138,23 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 	if(huart==&huart2)
 	{
-//		if(uart_rx_buffer==0x0A)
-//		{
-//			flag=1;
-//			str1[a]=uart_rx_buffer;
-//			a++;
-//			flag=1;
-//			line_append(uart_rx_buffer);
-//		}
 		line_append(uart_rx_buffer);
-		HAL_UART_Receive_IT(&huart2, &uart_rx_buffer,1);
+
 	}
+	HAL_UART_Receive_IT(&huart2, &uart_rx_buffer,1);
 }
 
-//void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-//{
-//	if(htim==&htim2)
-//	{
-//		sprintf(buffer,"%i Welcome\r\n",i);
-//		i++;
-//		len=strlen(buffer);
-//		HAL_UART_Transmit(&huart2,buffer,len,100);
-//	}
-//}
+
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+	if(htim==&htim2)
+	{
+		sprintf(buffer,"%i Welcome\r\n",i);
+		i++;
+		len=strlen(buffer);
+		HAL_UART_Transmit(&huart2,buffer,len,100);
+	}
+}
 
 /* USER CODE END 0 */
 
@@ -199,9 +191,8 @@ int main(void)
   /* USER CODE BEGIN 2 */
 //  const char message[]="HEJA\n\r";
 //  HAL_UART_Transmit(&huart2, (uint8_t*)message, strlen(message), HAL_MAX_DELAY);
-//  printf("HALOO\n");
-  //HAL_UART_Receive_IT(&huart2,&uart_rx_buffer,1);
-  //HAL_TIM_Base_Start_IT(&htim2);
+  HAL_UART_Receive_IT(&huart2,&uart_rx_buffer,1);
+  HAL_TIM_Base_Start_IT(&htim2);
 
   /* USER CODE END 2 */
 
@@ -209,9 +200,11 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  //printf("systick=%lu\n", HAL_GetTick());
-	  uint8_t value;
-	  if(HAL_UART_Receive(&huart2, &value, 1, 0)==HAL_OK) line_append(value);
+
+//	  printf("systick=%lu\n", HAL_GetTick());
+//	  uint8_t value;
+//	  if(HAL_UART_Receive(&huart2, &value, 1, 0)==HAL_OK) line_append(value);
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -283,9 +276,9 @@ static void MX_TIM2_Init(void)
 
   /* USER CODE END TIM2_Init 1 */
   htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 720;
+  htim2.Init.Prescaler = 8000-1;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 1999;
+  htim2.Init.Period = 2000;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
@@ -297,7 +290,7 @@ static void MX_TIM2_Init(void)
   {
     Error_Handler();
   }
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE;
   sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
   if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
   {
@@ -378,7 +371,7 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pin = LD2_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(LD2_GPIO_Port, &GPIO_InitStruct);
 
 }
