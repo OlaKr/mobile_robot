@@ -1,0 +1,4 @@
+tb6612fng.c:5:6:mode_control	16	static
+tb6612fng.c:14:6:set_motorA_direction	16	static
+tb6612fng.c:22:6:set_motorA_speed	16	static
+tb6612fng.c:30:6:tb6612_init	8	static

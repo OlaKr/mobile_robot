@@ -47,8 +47,10 @@ extern "C" {
 
 /* Exported macro ------------------------------------------------------------*/
 /* USER CODE BEGIN EM */
-
+extern TIM_HandleTypeDef htim1;
 /* USER CODE END EM */
+
+void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 
 /* Exported functions prototypes ---------------------------------------------*/
 void Error_Handler(void);
@@ -62,6 +64,12 @@ void Error_Handler(void);
 #define USER_BUTTON_GPIO_Port GPIOC
 #define LD2_Pin GPIO_PIN_5
 #define LD2_GPIO_Port GPIOA
+#define PWM_Pin GPIO_PIN_8
+#define PWM_GPIO_Port GPIOA
+#define MODE_Pin GPIO_PIN_4
+#define MODE_GPIO_Port GPIOB
+#define APHASE_Pin GPIO_PIN_5
+#define APHASE_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
