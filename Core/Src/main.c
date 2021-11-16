@@ -129,7 +129,7 @@ void line_append(uint8_t value)
 			}
 			else if(strcmp(line_buffer, "nie")==0){
 				set_motorA_speed(20);
-				HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
+				HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);
 				printf("Command: %s\n", line_buffer);
 			}
 			else printf("Unrecognized command: %s\n", line_buffer);
@@ -211,10 +211,12 @@ int main(void)
   HAL_UART_Receive_IT(&huart1,&uart_rx_buffer,1);
   HAL_TIM_Base_Start_IT(&htim2);
 
-  tb6612_init();
-  int pwm=95;
-
-
+  tb6612_init(CW,CW,70,70);
+  //int pwm=95;
+  //set_motorA_speed(95);
+  //HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);
+  //set_motorA_speed(50);
+  //HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
   //set_motorA_direction(dir);
 
   /* USER CODE END 2 */
@@ -385,6 +387,10 @@ static void MX_TIM1_Init(void)
   {
     Error_Handler();
   }
+  if (HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, TIM_CHANNEL_2) != HAL_OK)
+  {
+    Error_Handler();
+  }
   sBreakDeadTimeConfig.OffStateRunMode = TIM_OSSR_DISABLE;
   sBreakDeadTimeConfig.OffStateIDLEMode = TIM_OSSI_DISABLE;
   sBreakDeadTimeConfig.LockLevel = TIM_LOCKLEVEL_OFF;
@@ -500,7 +506,10 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, MODE_Pin|APHASE_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, BIN1_Pin|BIN2_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOB, AIN1_Pin|AIN2_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : USER_BUTTON_Pin */
   GPIO_InitStruct.Pin = USER_BUTTON_Pin;
@@ -515,8 +524,15 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(LD2_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : MODE_Pin APHASE_Pin */
-  GPIO_InitStruct.Pin = MODE_Pin|APHASE_Pin;
+  /*Configure GPIO pins : BIN1_Pin BIN2_Pin */
+  GPIO_InitStruct.Pin = BIN1_Pin|BIN2_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : AIN1_Pin AIN2_Pin */
+  GPIO_InitStruct.Pin = AIN1_Pin|AIN2_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
