@@ -53,19 +53,3 @@ void tb6612_init(TB6612_Direction dirA, TB6612_Direction dirB, uint8_t speedA, u
 	set_motorB_speed(speedB);
 	HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
