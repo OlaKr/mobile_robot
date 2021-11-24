@@ -26,12 +26,14 @@ typedef enum
 	ONETIME_LOW_RES_MODE = 0x23
 }BH1750_mode;
 
-BH1750_STATUS BH1750_Init(I2C_HandleTypeDef *hi2c);
+BH1750_STATUS BH1750_Init(I2C_HandleTypeDef *hi2c, I2C_HandleTypeDef *hi2c2);
 BH1750_STATUS BH1750_Reset(void);
 BH1750_STATUS BH1750_PowerState(uint8_t PowerOn);
 BH1750_STATUS BH1750_SetMtreg(uint8_t Mtreg);
 BH1750_STATUS BH1750_SetMode(BH1750_mode Mode);
 BH1750_STATUS BH1750_TriggerManualConversion(void);
 BH1750_STATUS BH1750_ReadLight(float *Result);
+BH1750_STATUS BH1750_ReadLight2(float *Result);
+
 
 #endif /* INC_BH1750_H_ */

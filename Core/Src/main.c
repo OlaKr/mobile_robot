@@ -36,7 +36,8 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-typedef struct{
+typedef struct
+{
 	GPIO_TypeDef* port;
 	uint16_t pin;
 }button_nr;
@@ -66,9 +67,11 @@ typedef struct{
 
 int len;
 char buffer[100];
-int i;
+
 uint8_t RX_BUFFER[BUFFER_LEN] = {0};
+
 float BH1750_lux;
+float BH1750_lux2;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -174,22 +177,27 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-	uint8_t size;
+
 	if(htim==&htim2)
 	{
-//		sprintf(buffer,"%i Welcome\r\n",i);
-//		i++;
-//		len=strlen(buffer);
-//		HAL_UART_Transmit(&huart1,buffer,len,100);
-
-		if(BH1750_OK == BH1750_ReadLight(&BH1750_lux)){
+		if(BH1750_OK == BH1750_ReadLight(&BH1750_lux))
+		{
 			sprintf(buffer,"BH1750 Lux: %.2f\r\n", BH1750_lux);
 			len=strlen(buffer);
 			HAL_UART_Transmit(&huart1,buffer,len,100);
 		}
-
-//		  HAL_Delay(200);
 	}
+
+	if(htim==&htim5)
+	{
+		if(BH1750_OK == BH1750_ReadLight2(&BH1750_lux2))
+		{
+			sprintf(buffer,"BH1750 Lux2: %.2f\r\n", BH1750_lux2);
+			len=strlen(buffer);
+			HAL_UART_Transmit(&huart1,buffer,len,100);
+		}
+	}
+
 }
 
 
@@ -229,24 +237,23 @@ int main(void)
   MX_TIM1_Init();
   MX_I2C1_Init();
   MX_I2C2_Init();
+  MX_TIM5_Init();
   /* USER CODE BEGIN 2 */
 //  const char message[]="HEJA\n\r";
 //  HAL_UART_Transmit(&huart2, (uint8_t*)message, strlen(message), HAL_MAX_DELAY);
   HAL_UART_Receive_IT(&huart1,&uart_rx_buffer,1);
   HAL_TIM_Base_Start_IT(&htim2);
+  HAL_TIM_Base_Start_IT(&htim5);
 
-
-  BH1750_Init(&hi2c1);
+  BH1750_Init(&hi2c1, &hi2c2);
   BH1750_SetMode(CONTINUOUS_HIGH_RES_MODE_2);
 
-  //tb6612_init(CW,CW,70,70);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-
 
 //	  printf("systick=%lu\n", HAL_GetTick());
 //	  uint8_t value;

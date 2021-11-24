@@ -1,0 +1,7 @@
+bh17502.c:12:15:BH1750_Init2	16	static
+bh17502.c:26:15:BH1750_Reset2	24	static
+bh17502.c:40:15:BH1750_PowerState2	24	static
+bh17502.c:52:15:BH1750_SetMode2	24	static
+bh17502.c:67:15:BH1750_SetMtreg2	32	static
+bh17502.c:100:15:BH1750_TriggerManualConversion2	8	static
+bh17502.c:112:15:BH1750_ReadLight2	32	static
