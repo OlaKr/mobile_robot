@@ -2,54 +2,86 @@
 #include "main.h"
 
 
-void set_motorA_direction(TB6612_Direction dir)
+void set_motorA(int8_t speed)
 {
-	if (dir==CW)
+	if (speed>=0)
 	{
 		HAL_GPIO_WritePin(AIN1_GPIO_Port, AIN1_Pin, SET);
 		HAL_GPIO_WritePin(AIN2_GPIO_Port, AIN2_Pin, RESET);
 	}
-	else if (dir==CCW)
+	else
 	{
 		HAL_GPIO_WritePin(AIN1_GPIO_Port, AIN1_Pin, RESET);
 		HAL_GPIO_WritePin(AIN2_GPIO_Port, AIN2_Pin, SET);
 	}
-}
 
-void set_motorB_direction(TB6612_Direction dir)
-{
-	if (dir==CW)
-	{
-		HAL_GPIO_WritePin(BIN1_GPIO_Port, BIN1_Pin, SET);
-		HAL_GPIO_WritePin(BIN2_GPIO_Port, BIN2_Pin, RESET);
-	}
-	else if (dir==CCW)
-	{
-		HAL_GPIO_WritePin(BIN1_GPIO_Port, BIN1_Pin, RESET);
-		HAL_GPIO_WritePin(BIN2_GPIO_Port, BIN2_Pin, SET);
-	}
-}
-
-void set_motorA_speed(uint8_t speed)
-{
 	if(speed>=htim1.Instance->ARR)
 		speed=htim1.Instance->ARR;
 	__HAL_TIM_SetCompare(&htim1, TIM_CHANNEL_1, speed);
 }
 
-void set_motorB_speed(uint8_t speed)
+void set_motorB(int8_t speed)
 {
+	if (speed>=0)
+	{
+		HAL_GPIO_WritePin(BIN1_GPIO_Port, BIN1_Pin, SET);
+		HAL_GPIO_WritePin(BIN2_GPIO_Port, BIN2_Pin, RESET);
+	}
+	else
+	{
+		HAL_GPIO_WritePin(BIN1_GPIO_Port, BIN1_Pin, RESET);
+		HAL_GPIO_WritePin(BIN2_GPIO_Port, BIN2_Pin, SET);
+	}
+
 	if(speed>=htim1.Instance->ARR)
 		speed=htim1.Instance->ARR;
 	__HAL_TIM_SetCompare(&htim1, TIM_CHANNEL_2, speed);
 }
 
-void tb6612_init(TB6612_Direction dirA, TB6612_Direction dirB, uint8_t speedA, uint8_t speedB)
+void set_motorC(int8_t speed)
 {
-	set_motorA_direction(dirA);
-	set_motorA_speed(speedA);
+	if (speed>=0)
+	{
+		HAL_GPIO_WritePin(CIN1_GPIO_Port, CIN1_Pin, SET);
+		HAL_GPIO_WritePin(CIN2_GPIO_Port, CIN2_Pin, RESET);
+	}
+	else
+	{
+		HAL_GPIO_WritePin(CIN1_GPIO_Port, CIN1_Pin, RESET);
+		HAL_GPIO_WritePin(CIN2_GPIO_Port, CIN2_Pin, SET);
+	}
+
+	if(speed>=htim3.Instance->ARR)
+		speed=htim3.Instance->ARR;
+	__HAL_TIM_SetCompare(&htim3, TIM_CHANNEL_1, speed);
+}
+
+void set_motorD(int8_t speed)
+{
+	if (speed>=0)
+	{
+		HAL_GPIO_WritePin(DIN1_GPIO_Port, DIN1_Pin, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(DIN2_GPIO_Port, DIN2_Pin, GPIO_PIN_RESET);
+	}
+	else
+	{
+		HAL_GPIO_WritePin(DIN1_GPIO_Port, DIN1_Pin, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(DIN2_GPIO_Port, DIN2_Pin, GPIO_PIN_SET);
+	}
+
+	if(speed>=htim3.Instance->ARR)
+		speed=htim3.Instance->ARR;
+	__HAL_TIM_SetCompare(&htim3, TIM_CHANNEL_2, speed);
+}
+
+void TB6612_init(int8_t speedA, int8_t speedB, int8_t speedC, int8_t speedD)
+{
+	set_motorA(speedA);
 	HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
-	set_motorB_direction(dirB);
-	set_motorB_speed(speedB);
+	set_motorB(speedB);
 	HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);
+	set_motorC(speedC);
+	HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
+	set_motorD(speedD);
+	HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_2);
 }

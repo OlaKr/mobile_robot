@@ -32,6 +32,7 @@
 #include <stdbool.h>
 #include "tb6612fng.h"
 #include "bh1750.h"
+#include "light_control.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -48,6 +49,7 @@ typedef struct
 #define LINE_MAX_LENGTH 80
 
 #define BUFFER_LEN  1
+
 
 /* USER CODE END PD */
 
@@ -72,6 +74,8 @@ uint8_t RX_BUFFER[BUFFER_LEN] = {0};
 
 float BH1750_lux;
 float BH1750_lux2;
+float BH1750_lux_sub;
+float zmiana;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -83,8 +87,8 @@ void SystemClock_Config(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-//bool is_button_pressed(int button_number)
-//{
+//bool is_button_pressed(int button_number){
+//
 //	if(HAL_GPIO_ReadPin(BUTTON[button_number].port, BUTTON[button_number].pin) == GPIO_PIN_RESET){
 //		return true;
 //	}
@@ -122,31 +126,31 @@ void line_append(uint8_t value)
 				printf("Command: %s\n", line_buffer);
 			}
 			else if(strcmp(line_buffer, "slow")==0){
-				tb6612_init(CW,CW,40,40);
+				TB6612_init(40,40,40,40);
 				printf("Command: %s\n", line_buffer);
 			}
 			else if(strcmp(line_buffer, "fast")==0){
-				tb6612_init(CW,CW,99,99);
+				TB6612_init(99,99,99,99);
 				printf("Command: %s\n", line_buffer);
 			}
 			else if(strcmp(line_buffer, "forward")==0){
-				tb6612_init(CW,CW,99,99);
+				TB6612_init(99,99,99,99);
 				printf("Command: %s\n", line_buffer);
 			}
 			else if(strcmp(line_buffer, "backward")==0){
-				tb6612_init(CCW,CCW,99,99);
+				TB6612_init(-99,-99,-99,-99);
 				printf("Command: %s\n", line_buffer);
 			}
 			else if(strcmp(line_buffer, "left")==0){
-				tb6612_init(CW,CW,30,99);
+				TB6612_init(0,80,80,0);
 				printf("Command: %s\n", line_buffer);
 			}
 			else if(strcmp(line_buffer, "right")==0){
-				tb6612_init(CW,CW,99,30);
+				TB6612_init(80,0,0,80);
 				printf("Command: %s\n", line_buffer);
 			}
 			else if(strcmp(line_buffer, "stopit")==0){
-				tb6612_init(CW,CW,0,0);
+				TB6612_init(0,0,0,0);
 			}
 			else printf("Unrecognized command: %s\n", line_buffer);
 			line_length=0;
@@ -198,6 +202,24 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 		}
 	}
 
+	if(htim==&htim9)
+	{
+		BH1750_lux_sub=BH1750_lux2-BH1750_lux;
+		ustawmax();
+		//sprintf(buffer,"SUB: %.2f\r\n", BH1750_lux_sub);
+		przeliczenie();
+		//sprintf(buffer,"zmiana: %.2f\r\n", zmiana);
+		len=strlen(buffer);
+		HAL_UART_Transmit(&huart1,buffer,len,100);
+		if(BH1750_lux>30 && BH1750_lux2>30)
+		{
+			//TB6612_init(49-zmiana,49+zmiana,49+zmiana,49-zmiana);
+		}
+		else
+		{
+			//TB6612_init(0,0,0,0);
+		}
+	}
 }
 
 
@@ -238,15 +260,19 @@ int main(void)
   MX_I2C1_Init();
   MX_I2C2_Init();
   MX_TIM5_Init();
+  MX_TIM3_Init();
+  MX_TIM9_Init();
   /* USER CODE BEGIN 2 */
 //  const char message[]="HEJA\n\r";
-//  HAL_UART_Transmit(&huart2, (uint8_t*)message, strlen(message), HAL_MAX_DELAY);
+//  HAL_UART_Transmit(&huart1, (uint8_t*)message, strlen(message), HAL_MAX_DELAY);
   HAL_UART_Receive_IT(&huart1,&uart_rx_buffer,1);
   HAL_TIM_Base_Start_IT(&htim2);
   HAL_TIM_Base_Start_IT(&htim5);
+  HAL_TIM_Base_Start_IT(&htim9);
 
   BH1750_Init(&hi2c1, &hi2c2);
   BH1750_SetMode(CONTINUOUS_HIGH_RES_MODE_2);
+  //TB6612_init(CW,CW,CW,CW,30,30,30,30);
 
   /* USER CODE END 2 */
 

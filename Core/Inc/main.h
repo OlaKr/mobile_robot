@@ -48,6 +48,7 @@ extern "C" {
 /* Exported macro ------------------------------------------------------------*/
 /* USER CODE BEGIN EM */
 extern TIM_HandleTypeDef htim1;
+extern TIM_HandleTypeDef htim3;
 /* USER CODE END EM */
 
 /* Exported functions prototypes ---------------------------------------------*/
@@ -60,8 +61,16 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define USER_BUTTON_Pin GPIO_PIN_13
 #define USER_BUTTON_GPIO_Port GPIOC
+#define CIN1_Pin GPIO_PIN_2
+#define CIN1_GPIO_Port GPIOC
+#define CIN2_Pin GPIO_PIN_3
+#define CIN2_GPIO_Port GPIOC
 #define LD2_Pin GPIO_PIN_5
 #define LD2_GPIO_Port GPIOA
+#define PWM3_Pin GPIO_PIN_6
+#define PWM3_GPIO_Port GPIOA
+#define PWM4_Pin GPIO_PIN_7
+#define PWM4_GPIO_Port GPIOA
 #define BIN1_Pin GPIO_PIN_6
 #define BIN1_GPIO_Port GPIOC
 #define BIN2_Pin GPIO_PIN_8
@@ -70,6 +79,10 @@ void Error_Handler(void);
 #define PWM_GPIO_Port GPIOA
 #define PWM2_Pin GPIO_PIN_9
 #define PWM2_GPIO_Port GPIOA
+#define DIN1_Pin GPIO_PIN_11
+#define DIN1_GPIO_Port GPIOC
+#define DIN2_Pin GPIO_PIN_2
+#define DIN2_GPIO_Port GPIOD
 #define AIN1_Pin GPIO_PIN_3
 #define AIN1_GPIO_Port GPIOB
 #define AIN2_Pin GPIO_PIN_4

@@ -33,7 +33,9 @@ extern "C" {
 
 extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim2;
+extern TIM_HandleTypeDef htim3;
 extern TIM_HandleTypeDef htim5;
+extern TIM_HandleTypeDef htim9;
 
 /* USER CODE BEGIN Private defines */
 
@@ -41,7 +43,9 @@ extern TIM_HandleTypeDef htim5;
 
 void MX_TIM1_Init(void);
 void MX_TIM2_Init(void);
+void MX_TIM3_Init(void);
 void MX_TIM5_Init(void);
+void MX_TIM9_Init(void);
 
 void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 

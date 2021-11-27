@@ -1,5 +1,5 @@
-tb6612fng.c:5:6:set_motorA_direction	16	static
-tb6612fng.c:19:6:set_motorB_direction	16	static
-tb6612fng.c:33:6:set_motorA_speed	16	static
-tb6612fng.c:40:6:set_motorB_speed	16	static
-tb6612fng.c:47:6:tb6612_init	24	static
+tb6612fng.c:5:6:set_motorA	16	static
+tb6612fng.c:23:6:set_motorB	16	static
+tb6612fng.c:41:6:set_motorC	16	static
+tb6612fng.c:59:6:set_motorD	16	static
+tb6612fng.c:77:6:TB6612_init	24	static
