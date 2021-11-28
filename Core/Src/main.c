@@ -117,42 +117,6 @@ void line_append(uint8_t value)
 		if(line_length>0)
 		{
 			line_buffer[line_length]='\0';
-			if (strcmp(line_buffer, "on")==0){
-				HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
-				printf("Command: %s\n", line_buffer);
-			}
-			else if(strcmp(line_buffer, "off")==0){
-				HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
-				printf("Command: %s\n", line_buffer);
-			}
-			else if(strcmp(line_buffer, "slow")==0){
-				TB6612_init(40,40,40,40);
-				printf("Command: %s\n", line_buffer);
-			}
-			else if(strcmp(line_buffer, "fast")==0){
-				TB6612_init(99,99,99,99);
-				printf("Command: %s\n", line_buffer);
-			}
-			else if(strcmp(line_buffer, "forward")==0){
-				TB6612_init(99,99,99,99);
-				printf("Command: %s\n", line_buffer);
-			}
-			else if(strcmp(line_buffer, "backward")==0){
-				TB6612_init(-99,-99,-99,-99);
-				printf("Command: %s\n", line_buffer);
-			}
-			else if(strcmp(line_buffer, "left")==0){
-				TB6612_init(0,80,80,0);
-				printf("Command: %s\n", line_buffer);
-			}
-			else if(strcmp(line_buffer, "right")==0){
-				TB6612_init(80,0,0,80);
-				printf("Command: %s\n", line_buffer);
-			}
-			else if(strcmp(line_buffer, "stopit")==0){
-				TB6612_init(0,0,0,0);
-			}
-			else printf("Unrecognized command: %s\n", line_buffer);
 			line_length=0;
 		}
 	}
@@ -184,19 +148,56 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
 	if(htim==&htim2)
 	{
-		if(BH1750_OK == BH1750_ReadLight(&BH1750_lux))
-		{
-			sprintf(buffer,"BH1750 Lux: %.2f\r\n", BH1750_lux);
-			len=strlen(buffer);
-			HAL_UART_Transmit(&huart1,buffer,len,100);
+		if (strcmp(line_buffer, "on")==0){
+			HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
+			printf("Command: %s\n", line_buffer);
 		}
+		else if(strcmp(line_buffer, "off")==0){
+			HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
+			printf("Command: %s\n", line_buffer);
+		}
+		else if(strcmp(line_buffer, "slow")==0){
+			TB6612_init(40,40,40,40);
+			printf("Command: %s\n", line_buffer);
+		}
+		else if(strcmp(line_buffer, "stopit")==0){
+			TB6612_init(0,0,0,0);
+			printf("Command: %s\n", line_buffer);
+		}
+		else if(strcmp(line_buffer, "fast")==0){
+			TB6612_init(99,99,99,99);
+			printf("Command: %s\n", line_buffer);
+		}
+		else if(strcmp(line_buffer, "forward")==0){
+			TB6612_init(99,99,99,99);
+			printf("Command: %s\n", line_buffer);
+		}
+		else if(strcmp(line_buffer, "backward")==0){
+			TB6612_init(-99,-99,-99,-99);
+			printf("Command: %s\n", line_buffer);
+		}
+		else if(strcmp(line_buffer, "left")==0){
+			TB6612_init(0,80,80,0);
+			printf("Command: %s\n", line_buffer);
+		}
+		else if(strcmp(line_buffer, "right")==0){
+			TB6612_init(80,0,0,80);
+			printf("Command: %s\n", line_buffer);
+		}
+		//else printf("Unrecognized command: %s\n", line_buffer);
 	}
 
 	if(htim==&htim5)
 	{
+		if(BH1750_OK == BH1750_ReadLight(&BH1750_lux))
+		{
+			//sprintf(buffer,"BH1750 Lux: %.2f\r\n", BH1750_lux);
+			len=strlen(buffer);
+			HAL_UART_Transmit(&huart1,buffer,len,100);
+		}
 		if(BH1750_OK == BH1750_ReadLight2(&BH1750_lux2))
 		{
-			sprintf(buffer,"BH1750 Lux2: %.2f\r\n", BH1750_lux2);
+			//sprintf(buffer,"BH1750 Lux2: %.2f\r\n", BH1750_lux2);
 			len=strlen(buffer);
 			HAL_UART_Transmit(&huart1,buffer,len,100);
 		}
@@ -211,13 +212,17 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 		//sprintf(buffer,"zmiana: %.2f\r\n", zmiana);
 		len=strlen(buffer);
 		HAL_UART_Transmit(&huart1,buffer,len,100);
-		if(BH1750_lux>30 && BH1750_lux2>30)
+		if(strcmp(line_buffer, "light")==0)
 		{
-			//TB6612_init(49-zmiana,49+zmiana,49+zmiana,49-zmiana);
-		}
-		else
-		{
-			//TB6612_init(0,0,0,0);
+			if(BH1750_lux>30 && BH1750_lux2>30)
+			{
+				TB6612_init(49-zmiana,49+zmiana,49+zmiana,49-zmiana);
+			}
+			else
+			{
+				TB6612_init(0,0,0,0);
+			}
+			printf("Command: %s\n", line_buffer);
 		}
 	}
 }
@@ -272,7 +277,6 @@ int main(void)
 
   BH1750_Init(&hi2c1, &hi2c2);
   BH1750_SetMode(CONTINUOUS_HIGH_RES_MODE_2);
-  //TB6612_init(CW,CW,CW,CW,30,30,30,30);
 
   /* USER CODE END 2 */
 
