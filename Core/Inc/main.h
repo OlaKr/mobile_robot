@@ -32,7 +32,8 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "wave_file.h"
+#include "wave_player.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -49,6 +50,8 @@ extern "C" {
 /* USER CODE BEGIN EM */
 extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim3;
+extern DAC_HandleTypeDef hdac;
+extern DMA_HandleTypeDef hdma_dac1;
 /* USER CODE END EM */
 
 /* Exported functions prototypes ---------------------------------------------*/

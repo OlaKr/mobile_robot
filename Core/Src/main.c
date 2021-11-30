@@ -19,6 +19,8 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "dac.h"
+#include "dma.h"
 #include "i2c.h"
 #include "rtc.h"
 #include "tim.h"
@@ -33,6 +35,8 @@
 #include "tb6612fng.h"
 #include "bh1750.h"
 #include "light_control.h"
+#include "wave_file.h"
+#include "wave_player.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -76,6 +80,8 @@ float BH1750_lux;
 float BH1750_lux2;
 float BH1750_lux_sub;
 float zmiana;
+
+extern uint8_t audio_file[];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -258,6 +264,7 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_TIM2_Init();
   MX_RTC_Init();
   MX_USART1_UART_Init();
@@ -267,6 +274,8 @@ int main(void)
   MX_TIM5_Init();
   MX_TIM3_Init();
   MX_TIM9_Init();
+  MX_DAC_Init();
+  MX_TIM6_Init();
   /* USER CODE BEGIN 2 */
 //  const char message[]="HEJA\n\r";
 //  HAL_UART_Transmit(&huart1, (uint8_t*)message, strlen(message), HAL_MAX_DELAY);
@@ -278,13 +287,18 @@ int main(void)
   BH1750_Init(&hi2c1, &hi2c2);
   BH1750_SetMode(CONTINUOUS_HIGH_RES_MODE_2);
 
+
+  wave_player_init(&htim6, &hdac);
+  wave_player_start(audio_file);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-
+	  wave_player_start(audio_file);
+	  HAL_Delay(2000);
 //	  printf("systick=%lu\n", HAL_GetTick());
 //	  uint8_t value;
 //	  if(HAL_UART_Receive(&huart2, &value, 1, 0)==HAL_OK) line_append(value);
@@ -356,7 +370,15 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+void HAL_DAC_ConvCpltCallbackCh1(DAC_HandleTypeDef *hdac)
+{
+	wave_player_prepare_half_buffer(SECOND_HALF_OF_BUFFER);
+}
 
+void HAL_DAC_ConvHalfCpltCallbackCh1(DAC_HandleTypeDef *hdac)
+{
+	wave_player_prepare_half_buffer(FIRST_HALF_OF_BUFFER);
+}
 /* USER CODE END 4 */
 
 /**
