@@ -46,6 +46,19 @@ typedef struct
 	GPIO_TypeDef* port;
 	uint16_t pin;
 }button_nr;
+
+typedef enum
+{
+	FORWARD,
+	BACKWARD,
+	LEFT,
+	RIGHT,
+	STOP,
+	SLOW,
+	FAST,
+	LIGHT
+}control;
+
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -65,11 +78,6 @@ typedef struct
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-//static const button_nr BUTTON[]={
-//		{USER_BUTTON_GPIO_Port, USER_BUTTON_Pin},
-//		{USER_BUTTON1_GPIO_Port, USER_BUTTON1_Pin},
-//		{USER_BUTTON2_GPIO_Port, USER_BUTTON2_Pin},
-//};
 
 int len;
 char buffer[100];
@@ -79,9 +87,12 @@ uint8_t RX_BUFFER[BUFFER_LEN] = {0};
 float BH1750_lux;
 float BH1750_lux2;
 float BH1750_lux_sub;
-float zmiana;
+float change;
 
 extern uint8_t audio_file[];
+
+control setCommand = 8;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -93,13 +104,6 @@ void SystemClock_Config(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-//bool is_button_pressed(int button_number){
-//
-//	if(HAL_GPIO_ReadPin(BUTTON[button_number].port, BUTTON[button_number].pin) == GPIO_PIN_RESET){
-//		return true;
-//	}
-//	else return false;
-//}
 
 int __io_putchar(int sign)
 {
@@ -162,33 +166,26 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 			HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
 			printf("Command: %s\n", line_buffer);
 		}
-		else if(strcmp(line_buffer, "slow")==0){
-			TB6612_init(40,40,40,40);
-			printf("Command: %s\n", line_buffer);
+		else if(strcmp(line_buffer, "w")==0){
+			setCommand = SLOW;
 		}
-		else if(strcmp(line_buffer, "stopit")==0){
-			TB6612_init(0,0,0,0);
-			printf("Command: %s\n", line_buffer);
+		else if(strcmp(line_buffer, "s")==0){
+			setCommand = STOP;
 		}
-		else if(strcmp(line_buffer, "fast")==0){
-			TB6612_init(99,99,99,99);
-			printf("Command: %s\n", line_buffer);
+		else if(strcmp(line_buffer, "t")==0){
+			setCommand = FAST;
 		}
-		else if(strcmp(line_buffer, "forward")==0){
-			TB6612_init(99,99,99,99);
-			printf("Command: %s\n", line_buffer);
+		else if(strcmp(line_buffer, "f")==0){
+			setCommand = FORWARD;
 		}
-		else if(strcmp(line_buffer, "backward")==0){
-			TB6612_init(-99,-99,-99,-99);
-			printf("Command: %s\n", line_buffer);
+		else if(strcmp(line_buffer, "b")==0){
+			setCommand = BACKWARD;
 		}
-		else if(strcmp(line_buffer, "left")==0){
-			TB6612_init(0,80,80,0);
-			printf("Command: %s\n", line_buffer);
+		else if(strcmp(line_buffer, "l")==0){
+			setCommand = LEFT;
 		}
-		else if(strcmp(line_buffer, "right")==0){
-			TB6612_init(80,0,0,80);
-			printf("Command: %s\n", line_buffer);
+		else if(strcmp(line_buffer, "r")==0){
+			setCommand = RIGHT;
 		}
 		//else printf("Unrecognized command: %s\n", line_buffer);
 	}
@@ -212,27 +209,56 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	if(htim==&htim9)
 	{
 		BH1750_lux_sub=BH1750_lux2-BH1750_lux;
-		ustawmax();
 		//sprintf(buffer,"SUB: %.2f\r\n", BH1750_lux_sub);
-		przeliczenie();
-		//sprintf(buffer,"zmiana: %.2f\r\n", zmiana);
-		len=strlen(buffer);
-		HAL_UART_Transmit(&huart1,buffer,len,100);
-		if(strcmp(line_buffer, "light")==0)
+		if(strcmp(line_buffer, "i")==0)
 		{
-			if(BH1750_lux>30 && BH1750_lux2>30)
-			{
-				TB6612_init(49-zmiana,49+zmiana,49+zmiana,49-zmiana);
-			}
-			else
-			{
-				TB6612_init(0,0,0,0);
-			}
-			printf("Command: %s\n", line_buffer);
+			setCommand = LIGHT;
 		}
 	}
 }
 
+void robotControl()
+{
+	if(setCommand==FORWARD)
+	{
+		TB6612_init(99,99,99,99);
+	}
+	if(setCommand==BACKWARD)
+	{
+		TB6612_init(-99,-99,-99,-99);
+	}
+	else if(setCommand==LEFT)
+	{
+		TB6612_init(0,80,80,0);
+	}
+	else if(setCommand==RIGHT)
+	{
+		TB6612_init(80,0,0,80);
+	}
+	else if(setCommand==STOP)
+	{
+		TB6612_init(0,0,0,0);
+	}
+	else if(setCommand==SLOW)
+	{
+		TB6612_init(40,40,40,40);
+	}
+	else if(setCommand==FAST)
+	{
+		TB6612_init(99,99,99,99);
+	}
+}
+
+void followTheLight(){
+	if(BH1750_lux>30 && BH1750_lux2>30)
+	{
+		TB6612_init(49-change,49+change,49+change,49-change);
+	}
+	else
+	{
+		TB6612_init(0,0,0,0);
+	}
+}
 
 /* USER CODE END 0 */
 
@@ -277,8 +303,7 @@ int main(void)
   MX_DAC_Init();
   MX_TIM6_Init();
   /* USER CODE BEGIN 2 */
-//  const char message[]="HEJA\n\r";
-//  HAL_UART_Transmit(&huart1, (uint8_t*)message, strlen(message), HAL_MAX_DELAY);
+
   HAL_UART_Receive_IT(&huart1,&uart_rx_buffer,1);
   HAL_TIM_Base_Start_IT(&htim2);
   HAL_TIM_Base_Start_IT(&htim5);
@@ -287,9 +312,10 @@ int main(void)
   BH1750_Init(&hi2c1, &hi2c2);
   BH1750_SetMode(CONTINUOUS_HIGH_RES_MODE_2);
 
+  setMax();
 
   wave_player_init(&htim6, &hdac);
-  wave_player_start(audio_file);
+  //wave_player_start(audio_file);
 
   /* USER CODE END 2 */
 
@@ -297,11 +323,13 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  wave_player_start(audio_file);
-	  HAL_Delay(2000);
-//	  printf("systick=%lu\n", HAL_GetTick());
-//	  uint8_t value;
-//	  if(HAL_UART_Receive(&huart2, &value, 1, 0)==HAL_OK) line_append(value);
+	  //wave_player_start(audio_file);
+	  //HAL_Delay(2000);
+
+	  robotControl();
+
+	  proportionalPID();
+	  if(setCommand==LIGHT) followTheLight();
 
     /* USER CODE END WHILE */
 

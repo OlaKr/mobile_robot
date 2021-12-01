@@ -3,9 +3,9 @@
 #include "main.h"
 
 extern float BH1750_lux_sub;
-extern float zmiana;
+extern float change;
 
-void ustawmax(void);
-void przeliczenie(void);
+void setMax(void);
+void proportionalPID(void);
 
 #endif /* INC_LIGHT_CONTROL_H_ */
