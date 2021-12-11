@@ -56,8 +56,16 @@ typedef enum
 	STOP,
 	SLOW,
 	FAST,
-	LIGHT
+	LIGHT,
+	PLAY,
+	CLOSE
 }control;
+
+typedef enum
+{
+	//PLAY,
+	END
+}music;
 
 /* USER CODE END PTD */
 
@@ -67,6 +75,13 @@ typedef enum
 
 #define BUFFER_LEN  1
 
+#define V_SLOW  40
+#define V_FAST  99
+#define V_AVERAGE  80
+#define V_ZERO  0
+#define V_LIGHT 49
+
+#define MIN_LUX 30
 
 /* USER CODE END PD */
 
@@ -91,7 +106,11 @@ float change;
 
 extern uint8_t audio_file[];
 
-control setCommand = 8;
+control setCommand = CLOSE;
+music setPlay = END;
+
+uint8_t counter = 0;
+//uint16_t timer_val;
 
 /* USER CODE END PV */
 
@@ -116,6 +135,7 @@ int __io_putchar(int sign)
 	HAL_UART_Transmit(&huart1, (uint8_t*)&sign, 1, HAL_MAX_DELAY);
 	return 1;
 }
+
 
 static char line_buffer[LINE_MAX_LENGTH+1];
 static uint32_t line_length;
@@ -212,51 +232,57 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 		//sprintf(buffer,"SUB: %.2f\r\n", BH1750_lux_sub);
 		if(strcmp(line_buffer, "i")==0)
 		{
-			setCommand = LIGHT;
+			setCommand = PLAY;
 		}
+//		if(strcmp(line_buffer, "i")==0)
+//		{
+//			setCommand = PLAY;
+//		}
+
+
 	}
 }
 
 void robotControl()
 {
-	if(setCommand==FORWARD)
+	if(FORWARD==setCommand)
 	{
-		TB6612_init(99,99,99,99);
+		TB6612_init(V_FAST,V_FAST,V_FAST,V_FAST);
 	}
-	if(setCommand==BACKWARD)
+	else if(BACKWARD==setCommand)
 	{
-		TB6612_init(-99,-99,-99,-99);
+		TB6612_init(-V_FAST,-V_FAST,-V_FAST,-V_FAST);
 	}
-	else if(setCommand==LEFT)
+	else if(LEFT==setCommand)
 	{
-		TB6612_init(0,80,80,0);
+		TB6612_init(V_ZERO,V_AVERAGE,V_AVERAGE,V_ZERO);
 	}
-	else if(setCommand==RIGHT)
+	else if(RIGHT==setCommand)
 	{
-		TB6612_init(80,0,0,80);
+		TB6612_init(V_AVERAGE,V_ZERO,V_ZERO,V_AVERAGE);
 	}
-	else if(setCommand==STOP)
+	else if(STOP==setCommand)
 	{
-		TB6612_init(0,0,0,0);
+		TB6612_init(V_ZERO,V_ZERO,V_ZERO,V_ZERO);
 	}
-	else if(setCommand==SLOW)
+	else if(SLOW==setCommand)
 	{
-		TB6612_init(40,40,40,40);
+		TB6612_init(V_SLOW,V_SLOW,V_SLOW,V_SLOW);
 	}
-	else if(setCommand==FAST)
+	else if(FAST==setCommand)
 	{
-		TB6612_init(99,99,99,99);
+		TB6612_init(V_FAST,V_FAST,V_FAST,V_FAST);
 	}
 }
 
 void followTheLight(){
-	if(BH1750_lux>30 && BH1750_lux2>30)
+	if(BH1750_lux>MIN_LUX && BH1750_lux2>MIN_LUX)
 	{
-		TB6612_init(49-change,49+change,49+change,49-change);
+		TB6612_init(V_LIGHT-change,V_LIGHT+change,V_LIGHT+change,V_LIGHT-change);
 	}
 	else
 	{
-		TB6612_init(0,0,0,0);
+		TB6612_init(V_ZERO,V_ZERO,V_ZERO,V_ZERO);
 	}
 }
 
@@ -308,6 +334,7 @@ int main(void)
   HAL_TIM_Base_Start_IT(&htim2);
   HAL_TIM_Base_Start_IT(&htim5);
   HAL_TIM_Base_Start_IT(&htim9);
+  //HAL_TIM_Base_Start_IT(&htim8);
 
   BH1750_Init(&hi2c1, &hi2c2);
   BH1750_SetMode(CONTINUOUS_HIGH_RES_MODE_2);
@@ -317,19 +344,50 @@ int main(void)
   wave_player_init(&htim6, &hdac);
   //wave_player_start(audio_file);
 
+  //HAL_TIM_Base_Start(&htim8);
+  //timer_val = __HAL_TIM_GET_COUNTER(&htim8);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+
 	  //wave_player_start(audio_file);
 	  //HAL_Delay(2000);
+//	  if(__HAL_TIM_GET_COUNTER(&htim8) - timer_val >= 10000)
+//	  {
+//		  //wave_player_start(audio_file);
+//		  //HAL_Delay(2000);
+//		  HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+//		  timer_val = __HAL_TIM_GET_COUNTER(&htim8);
+//	  }
+
+
+	  if(PLAY==setCommand)
+	  {
+		  //wave_player_start(audio_file);
+		  HAL_Delay(2000);
+		  setCommand=CLOSE;
+	  }
+
+		  //printf("HAHAHAHHAHA\n");
+
+//	  if(counter==1)
+	  printf("Time: %02d:%02d:%02d\n", time.Hours, time.Minutes, time.Seconds);
+	  HAL_Delay(200);
+
+
 
 	  robotControl();
 
 	  proportionalPID();
 	  if(setCommand==LIGHT) followTheLight();
+
+
+		  //wave_player_start(audio_file);
+
 
     /* USER CODE END WHILE */
 
@@ -407,6 +465,16 @@ void HAL_DAC_ConvHalfCpltCallbackCh1(DAC_HandleTypeDef *hdac)
 {
 	wave_player_prepare_half_buffer(FIRST_HALF_OF_BUFFER);
 }
+//void HAL_RTCEx_WakeUpTimerEventCallback(RTC_HandleTypeDef *hrtc)
+//{
+//	UNUSED(hrtc);
+//	HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+//
+//	//wave_player_start(audio_file);
+//	//HAL_Delay(2000);
+//
+//}
+
 /* USER CODE END 4 */
 
 /**
