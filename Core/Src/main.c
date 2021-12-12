@@ -57,13 +57,12 @@ typedef enum
 	SLOW,
 	FAST,
 	LIGHT,
-	PLAY,
 	CLOSE
 }control;
 
 typedef enum
 {
-	//PLAY,
+	PLAY,
 	END
 }music;
 
@@ -232,7 +231,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 		//sprintf(buffer,"SUB: %.2f\r\n", BH1750_lux_sub);
 		if(strcmp(line_buffer, "i")==0)
 		{
-			setCommand = PLAY;
+			setCommand = LIGHT;
 		}
 //		if(strcmp(line_buffer, "i")==0)
 //		{
@@ -342,7 +341,7 @@ int main(void)
   setMax();
 
   wave_player_init(&htim6, &hdac);
-  //wave_player_start(audio_file);
+  wave_player_start(audio_file);
 
   //HAL_TIM_Base_Start(&htim8);
   //timer_val = __HAL_TIM_GET_COUNTER(&htim8);
@@ -356,6 +355,7 @@ int main(void)
 
 	  //wave_player_start(audio_file);
 	  //HAL_Delay(2000);
+
 //	  if(__HAL_TIM_GET_COUNTER(&htim8) - timer_val >= 10000)
 //	  {
 //		  //wave_player_start(audio_file);
@@ -365,25 +365,33 @@ int main(void)
 //	  }
 
 
-	  if(PLAY==setCommand)
-	  {
-		  //wave_player_start(audio_file);
-		  HAL_Delay(2000);
-		  setCommand=CLOSE;
-	  }
 
-		  //printf("HAHAHAHHAHA\n");
+//
+//	  if(PLAY==setPlay)
+//	  {
+//		  wave_player_start(audio_file);
+//		  setPlay=CLOSE;
+//	  }
 
-//	  if(counter==1)
-	  printf("Time: %02d:%02d:%02d\n", time.Hours, time.Minutes, time.Seconds);
-	  HAL_Delay(200);
 
+//	  RTC_TimeTypeDef time;
+//	  RTC_DateTypeDef date;
+//
+//	  HAL_RTC_GetTime(&hrtc, &time, RTC_FORMAT_BIN);
+//	  HAL_RTC_GetDate(&hrtc, &date, RTC_FORMAT_BIN);
+//
+//
+//
+//	  printf("Time: %02d:%02d:%02d\n", time.Hours, time.Minutes, time.Seconds);
+//	  HAL_Delay(200);
+//
 
 
 	  robotControl();
 
 	  proportionalPID();
-	  if(setCommand==LIGHT) followTheLight();
+	  if(LIGHT==setCommand)
+		  followTheLight();
 
 
 		  //wave_player_start(audio_file);
@@ -465,11 +473,13 @@ void HAL_DAC_ConvHalfCpltCallbackCh1(DAC_HandleTypeDef *hdac)
 {
 	wave_player_prepare_half_buffer(FIRST_HALF_OF_BUFFER);
 }
+
 //void HAL_RTCEx_WakeUpTimerEventCallback(RTC_HandleTypeDef *hrtc)
 //{
 //	UNUSED(hrtc);
 //	HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
 //
+//	//setPlay = PLAY;
 //	//wave_player_start(audio_file);
 //	//HAL_Delay(2000);
 //
