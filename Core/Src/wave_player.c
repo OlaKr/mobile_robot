@@ -93,7 +93,7 @@ void wave_player_prepare_first_buffer(void)
 		wave_player.byte_counter += 2;
 	}
 }
-
+extern uint8_t audio_file[];
 void wave_player_prepare_half_buffer(uint8_t half_number)
 {
 	int32_t i;
@@ -109,9 +109,20 @@ void wave_player_prepare_half_buffer(uint8_t half_number)
 
 			wave_player.byte_counter += 2;
 
-			if(wave_player.byte_counter >= wave_player.file_hdr.wave_file_hdr.data_size)
+			if(wave_player.byte_counter >= wave_player.file_hdr.wave_file_hdr.data_size / 2)
 			{
-				HAL_DAC_Stop_DMA(wave_player.hdac, DAC_CHANNEL_1);
+				int8_t status;
+
+				status = wave_player_read_header(audio_file);
+
+				if(ERROR == status)
+				{
+					return;
+				}
+
+				wave_player_set_timer_arr(wave_player.file_hdr.wave_file_hdr.sample_rate);
+
+				wave_player_prepare_first_buffer();
 				return;
 			}
 		}
@@ -128,9 +139,20 @@ void wave_player_prepare_half_buffer(uint8_t half_number)
 
 			wave_player.byte_counter += 2;
 
-			if(wave_player.byte_counter >= wave_player.file_hdr.wave_file_hdr.data_size)
+			if(wave_player.byte_counter >= wave_player.file_hdr.wave_file_hdr.data_size / 2)
 			{
-				HAL_DAC_Stop_DMA(wave_player.hdac, DAC_CHANNEL_1);
+				int8_t status;
+
+				status = wave_player_read_header(audio_file);
+
+				if(ERROR == status)
+				{
+					return;
+				}
+
+				wave_player_set_timer_arr(wave_player.file_hdr.wave_file_hdr.sample_rate);
+
+				wave_player_prepare_first_buffer();
 				return;
 			}
 		}
